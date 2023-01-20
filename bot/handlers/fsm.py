@@ -1,18 +1,8 @@
-import asyncio
-import logging
-from aiogram import Bot, Dispatcher, F
-from aiogram.types import (
-    BotCommand,
-    Message,
-    callback_query,
-    BotCommandScopeDefault,
-)
-from aiogram.filters import Text, Command
+from aiogram import Bot
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import Message, callback_query, BotCommandScopeDefault, BotCommand
 from aiogram.fsm.context import FSMContext
 from bot.keyboards.inline import kb_confirm
-
-
 from dotenv import dotenv_values
 
 config = dotenv_values()
@@ -21,10 +11,6 @@ config = dotenv_values()
 # получаем переменные среды
 token = config.get('token')
 admin_id = config.get('admin_id')
-
-
-# Создаем логер
-logger = logging.getLogger(__name__)
 
 
 class States(StatesGroup):
@@ -82,17 +68,7 @@ async def state_telephone(msg: Message, state: FSMContext):
         f"Фамилия: {data['last_name']}\n"
         f"Телефон: {data['telephone']}\n"
         'Подтвердите данные!',
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(text='Подтвердить', callback_data='confirm'),
-                    InlineKeyboardButton(text='Отменить', callback_data='cancel'),
-                ],
-                [
-                    InlineKeyboardButton(text='Перейти на сайт', url='mail.ru'),
-                ],
-            ]
-        ),
+        reply_markup=kb_confirm,
     )
 
 
@@ -116,28 +92,17 @@ async def cancel(call: callback_query.CallbackQuery, state: FSMContext, bot: Bot
     await state.clear()
 
 
-async def start():
-
-    logging.basicConfig(level=logging.INFO)
-
-    # Функция запуска бота
-    bots = Bot(token)
-    dp = Dispatcher()
-
-    # раздел регистрации обработчиков
-    dp.startup.register(start_app)
-    dp.shutdown.register(stop_app)
-
-    dp.message.register(cancel, Text(text='cancel', ignore_case=True))
-    dp.message.register(state_start, Command(commands=['start', 'go']))
-    dp.message.register(state_first_name, States.first_name)
-    dp.message.register(state_last_name, States.last_name)
-    dp.message.register(state_telephone, States.telephone)
-    dp.callback_query.register(cancel, States.complete, F.data == 'cancel')
-    dp.callback_query.register(confirm, States.complete, F.data == 'confirm')
-
-    await dp.start_polling(bots)
+async def admin(msg: Message):
+    await msg.answer('Привет, Админ!')
 
 
-if __name__ == '__main__':
-    asyncio.run(start())
+async def echo(msg: Message):
+    await msg.answer(msg.text)
+
+
+async def text(msg: Message):
+    await msg.answer('Ты ввел текст: ' + msg.text)
+
+
+async def comm_start(msg: Message):
+    await msg.reply('Начинаем работать')

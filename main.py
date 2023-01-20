@@ -6,11 +6,9 @@ from dotenv import dotenv_values
 
 config = dotenv_values()
 
-
 # получаем переменные среды
 token = config.get('token')
 admin_id = config.get('admin_id')
-
 
 # Создаем логер
 logger = logging.getLogger(__name__)
@@ -52,7 +50,6 @@ async def admin(msg: types.Message):
 
 
 async def start():
-
     logging.basicConfig(level=logging.INFO)
 
     # Функция запуска бота
